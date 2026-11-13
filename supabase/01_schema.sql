@@ -54,6 +54,20 @@ alter table public.facilities add constraint facilities_type_check check (type i
 alter table public.facilities drop constraint if exists facilities_gender_check;
 alter table public.facilities add constraint facilities_gender_check check (gender is null or gender in ('Karma','Sadece kadın','Sadece erkek'));
 
+-- 6 aylık kalış alanları
+alter table public.facilities add column if not exists stay6 text not null default 'ask';
+alter table public.facilities add column if not exists contract_weeks int;
+alter table public.facilities add column if not exists move_in text;
+alter table public.facilities add column if not exists deposit numeric(10,2);
+alter table public.facilities drop constraint if exists facilities_stay6_check;
+alter table public.facilities add constraint facilities_stay6_check check (stay6 in ('ok','ask','no'));
+alter table public.facilities drop constraint if exists facilities_contract_weeks_check;
+alter table public.facilities add constraint facilities_contract_weeks_check check (contract_weeks is null or contract_weeks between 1 and 60);
+alter table public.facilities drop constraint if exists facilities_move_in_check;
+alter table public.facilities add constraint facilities_move_in_check check (move_in is null or char_length(move_in) <= 80);
+alter table public.facilities drop constraint if exists facilities_deposit_check;
+alter table public.facilities add constraint facilities_deposit_check check (deposit is null or (deposit >= 0 and deposit < 20000));
+
 -- Favoriler (her kullanıcı kendi favorilerini yönetir, herkes sayıları görür)
 create table if not exists public.favorites (
   user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),

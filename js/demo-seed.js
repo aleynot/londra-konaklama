@@ -75,7 +75,11 @@ window.DEMO_SEED={
    "minStay": "Haftalık fiyatlandırma; akademik yıl 40 hafta. 6 aylık kalış için ISH ile teyit edin.",
    "notes": "Tek kişilik oda (ortak banyo) £281,01. Diğer seçenekler: en-suite tek £331,75 · twin en-suite kişi başı £204,58 · 4 kişilik oda £121,72 · stüdyo (özel mutfak+banyo) £386,58'den. Hafta sonu brunch ve Wi-Fi dahil.",
    "url": "https://www.ish.org.uk/ish-great-portland-street/",
-   "verified": false
+   "verified": false,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "lee-abbey",
@@ -93,7 +97,11 @@ window.DEMO_SEED={
    "minStay": "En az bir akademik dönem (term) kesintisiz — 6 ay uygun.",
    "notes": "Twin oda kişi başı £291 (koridorda ortak banyo). Tek kişilik £398 · küçük tek £378 · üç kişilik £237 · twin en-suite £324. Hafta içi yarım pansiyon, hafta sonu tam pansiyon; faturalar dahil. Hristiyan uluslararası öğrenci topluluğu. Karma olduğu sitede açıkça yazmıyor — teyit edin.",
    "url": "https://www.leeabbeylondon.com/living/rooms/",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "queen-alexandras",
@@ -111,7 +119,11 @@ window.DEMO_SEED={
    "minStay": "Dönemlik (Güz 16 hf, Bahar 11 hf, Yaz 14 hf) — iki dönem ≈ 6 ay.",
    "notes": "Kompakt oda £330; küçük £345, orta £357, büyük £380. Kahvaltı + akşam yemeği; her katta ortak mutfak ve ortak duş/WC, en-suite yok. Öncelik Imperial, RCM, RCA gibi kurumların tam zamanlı öğrencilerinde; dil okulu öğrencisinin kabulü belirsiz.",
    "url": "https://www.queenalex.com",
-   "verified": true
+   "verified": true,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": "Güz 30 Ağu–19 Ara 2026 · Bahar 3 Oca–20 Mar 2027 · Yaz 4 Nis–10 Tem 2027",
+   "deposit": null
   },
   {
    "id": "netherhall",
@@ -129,7 +141,11 @@ window.DEMO_SEED={
    "minStay": "Standart sözleşme 39 hafta (Eyl 2026 – Haz 2027); kısa kalış için sorun.",
    "notes": "New Wing oda £254, yarı en-suite oda £276. Uygunluk: 18–25 yaş, Birleşik Krallık'ta tam zamanlı üniversite öğrencisi erkekler — dil kursu öğrencileri muhtemelen kabul edilmez.",
    "url": "https://www.netherhall.org.uk/fees",
-   "verified": false
+   "verified": false,
+   "stay6": "ask",
+   "contractWeeks": 39,
+   "moveIn": "14 Eyl 2026 – 14 Haz 2027",
+   "deposit": null
   },
   {
    "id": "goldsmiths-house",
@@ -147,7 +163,11 @@ window.DEMO_SEED={
    "minStay": "Listelenen sözleşme 50 hafta; University Rooms üzerinden kısa süreli de kiralanıyor — 6 ay için sorun.",
    "notes": "Standart tek kişilik oda, faturalar (gaz, elektrik, su, internet) dahil. Büyük ortak mutfak, ortak banyolar. Camden Town yakını.",
    "url": "https://mystudenthalls.com/student-accommodation/london/goldsmiths-house/ns/ns",
-   "verified": true
+   "verified": true,
+   "stay6": "ask",
+   "contractWeeks": 50,
+   "moveIn": "19 Eyl 2026 – 4 Eyl 2027",
+   "deposit": null
   },
   {
    "id": "lha-belsize",
@@ -165,7 +185,11 @@ window.DEMO_SEED={
    "minStay": "Esnek: 7 gün ihbar süresi, 4 yıla kadar kalış. 12. haftadan sonra %15 indirim.",
    "notes": "Tek kişilik £243 · twin £170 · 3 kişilik yatakhane £143 · 4 kişilik £136. Tümünde ortak banyo. Sayfada şu an müsaitlik görünmüyordu. LHA'nın Bayswater/Paddington'da da benzer evleri var.",
    "url": "https://lhalondon.com/listing/belsize-house/",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "urbanest-wb",
@@ -183,7 +207,11 @@ window.DEMO_SEED={
    "minStay": "Twin oda için 51 haftalık sözleşme belirtilmiş; dönemlik/6 aylık seçenek için sorun.",
    "notes": "Özel oda (9 m², ortak mutfak+banyo) £389. Twin oda £329 (mutfak/banyo 2 kişi arasında). Stüdyo £559'dan.",
    "url": "https://universityliving.com/united-kingdom/london/property/urbanest-westminster-bridge",
-   "verified": false
+   "verified": false,
+   "stay6": "ask",
+   "contractWeeks": 51,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "manna-ash",
@@ -201,7 +229,11 @@ window.DEMO_SEED={
    "minStay": "2026/27 rezervasyonları açık; kısa dönem seçenekleri için Sanctuary ile görüşün.",
    "notes": "En-suite çift kişilik yataklı oda; tüm faturalar dahil.",
    "url": "https://www.sanctuary-students.com/student-accommodation/london/short-term-lets",
-   "verified": true
+   "verified": true,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "coopers-court",
@@ -219,7 +251,11 @@ window.DEMO_SEED={
    "minStay": "2026/27 rezervasyonları açık; kısa dönem için sorun.",
    "notes": "En-suite oda, bahçe alanı; tüm faturalar dahil.",
    "url": "https://www.sanctuary-students.com/student-accommodation/london/short-term-lets",
-   "verified": true
+   "verified": true,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "dinwiddy",
@@ -237,7 +273,11 @@ window.DEMO_SEED={
    "minStay": "2026/27 rezervasyonları açık; kısa dönem için sorun.",
    "notes": "Oda tipleri sayfada belirtilmemiş; faturalar dahil, bahçe alanı.",
    "url": "https://www.sanctuary-students.com/student-accommodation/london/short-term-lets",
-   "verified": false
+   "verified": false,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "sterling-court",
@@ -255,7 +295,11 @@ window.DEMO_SEED={
    "minStay": "Esnek kısa/uzun kalış (GoBritanya).",
    "notes": "Bölge 4 — listedeki en uygun rezidanslardan, ama merkeze uzak. Oda tipi (en-suite/stüdyo) rezervasyonda teyit edilmeli.",
    "url": "https://www.gobritanya.com/short-term-stays",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "mcmillan",
@@ -270,10 +314,14 @@ window.DEMO_SEED={
    "bills": "yes",
    "kitchen": "Ortak",
    "bathroom": "Özel",
-   "minStay": "Sitede 40–51 haftalık sözleşmeler listeleniyor; 6 aylık kalış TUEV teklifinde — TUEV ile teyit edin.",
-   "notes": "TUEV teklifi (haftalık): En-suite oda (karma) £230 · Silver Studio £300 · Silver Deluxe Studio £325 · Gold Studio (yenilenmemiş) £380 · Platinum Studio (yenilenmemiş, çift kişilik yatak) £385. En-suite odada mutfak ve oturma alanı ortak; stüdyolarda mutfak ve banyo odaya özel. GoBritanya üzerinden £280'den. Oxford International Greenwich'e yürüme mesafesinde.",
+   "minStay": "£230'lık Silver En-suite yalnızca 44 haftalık (12 Eyl 2026 – 17 Tem 2027) akademik yıl sözleşmesi için. Dönem ortası/6 aylık giriş için TUEV'e veya GoBritanya'ya (esnek kalış, £280'den) sorun.",
+   "notes": "TUEV teklifi (haftalık): En-suite oda (karma) £230 · Silver Studio £300 · Silver Deluxe Studio £325 · Gold Studio (yenilenmemiş) £380 · Platinum Studio (yenilenmemiş, çift kişilik yatak) £385 — bu fiyatlar akademik yıl sözleşmelerine ait (40–51 hafta). En-suite odada mutfak ve oturma alanı ortak; stüdyolarda mutfak ve banyo odaya özel. Oxford International Greenwich'e yürüme mesafesinde.",
    "url": "https://www.beststudenthalls.com/uk/london/mcmillan-student-village-greenwich-london/",
-   "verified": true
+   "verified": true,
+   "stay6": "ask",
+   "contractWeeks": 44,
+   "moveIn": "12 Eyl 2026 – 17 Tem 2027",
+   "deposit": 250
   },
   {
    "id": "ealing-res",
@@ -291,7 +339,11 @@ window.DEMO_SEED={
    "minStay": "Esnek kalış (GoBritanya).",
    "notes": "Fiyat £352–376 arası gösteriliyor. Central line North Acton'a yakın.",
    "url": "https://www.gobritanya.com/short-term-stays",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "lewisham-res",
@@ -309,7 +361,11 @@ window.DEMO_SEED={
    "minStay": "Esnek kalış (GoBritanya).",
    "notes": "Fiyat £382–414 arası gösteriliyor. DLR ile Greenwich'e 2 durak. TUEV teklifi: “Lewisham” Classic Studio £432/hafta (stüdyo: mutfak ve banyo odaya özel) — aynı bina olup olmadığını TUEV'e sorun.",
    "url": "https://www.gobritanya.com/short-term-stays",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "highbury-res",
@@ -327,7 +383,11 @@ window.DEMO_SEED={
    "minStay": "Esnek kalış (GoBritanya).",
    "notes": "Fiyat £393–413 arası gösteriliyor. Piccadilly line Holloway Road yanında.",
    "url": "https://www.gobritanya.com/short-term-stays",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "kent-house-share",
@@ -346,7 +406,11 @@ window.DEMO_SEED={
    "minStay": "En az 1 ay — 6 ay uygun.",
    "notes": "5 odalı dairede oda; elektrik, su, gaz ve Wi-Fi dahil (aylık kullanım limiti aşılırsa ek ücret). Öğrenci, çalışan veya çiftlere uygun. Banyo düzeni ilanda net değil. Örnek ilan — güncelliğini kontrol edin.",
    "url": "https://www.spotahome.com/london/for-rent:rooms/1435436",
-   "verified": false
+   "verified": false,
+   "stay6": "ok",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "wood-green-hall",
@@ -365,7 +429,11 @@ window.DEMO_SEED={
    "notes": "TUEV teklifi: tek kişilik oda, ortak banyo £198/hafta — listedeki en uygun rezidans. Karma bina; bazı kat ve daireler yalnızca kızlara veya erkeklere ayrılabiliyor. Ortak mutfakta kilitli dolap. Wood Green (Piccadilly) istasyonuna kısa yürüme; Russell Square'e ~19 dk.",
    "url": "https://www.soas.ac.uk/study/accommodation/undergraduate-halls/wood-green-hall",
    "verified": true,
-   "occupants": null
+   "occupants": null,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   },
   {
    "id": "homestay-tuev",
@@ -384,7 +452,11 @@ window.DEMO_SEED={
    "notes": "TUEV teklifi (haftalık): Self-catering (yemeksiz, mutfak kullanımı) £230 · Oda + kahvaltı £240 · Yarım pansiyon (kahvaltı + akşam yemeği) £270. Kartta yemeksiz seçenek gösterilir. Banyo genellikle aileyle ortaktır; ailenin konumu kursa uzaklığı belirler — atama yapılınca sorun.",
    "url": null,
    "verified": false,
-   "occupants": null
+   "occupants": null,
+   "stay6": "ask",
+   "contractWeeks": null,
+   "moveIn": null,
+   "deposit": null
   }
  ]
 };

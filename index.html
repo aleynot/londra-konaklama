@@ -39,6 +39,8 @@
       <div class="f"><label for="fMax">En fazla haftalık (£)</label><input type="number" id="fMax" placeholder="ör. 350" min="0"></div>
       <div class="f"><label for="fSort">Sırala</label>
         <select id="fSort"><option value="time">Kursa ulaşım süresi</option><option value="price">Fiyat (artan)</option><option value="fav">En çok favorilenen</option><option value="name">İsim</option></select></div>
+      <div class="f"><label for="fStay">6 aylık kalış</label>
+        <select id="fStay"><option value="">Hepsi</option><option value="ok">Sadece kesin uygun olanlar</option><option value="okask">Uygun + sorulması gerekenler</option></select></div>
       <div class="f"><label class="check"><input type="checkbox" id="fFav"> Sadece favorilerim</label></div>
       <button class="btn" id="addFacBtn">+ Konaklama ekle</button>
     </div></aside>
@@ -72,6 +74,9 @@
   <h3>Konaklama ekle</h3>
   <div class="sub">Eklediğiniz tesis siteyi açan herkese görünür.</div>
   <form id="facForm" class="fg">
+    <div class="full autofill"><label>İlan / kaynak linki</label>
+      <div class="afrow"><input name="url" type="url" placeholder="https://… ilan sayfasının linkini yapıştırın"><button type="button" class="btn small" id="autofillBtn">✨ Linkten doldur</button></div>
+      <div class="hint" id="autofillHint">Linki yapıştırıp “Linkten doldur”a basın; bilgiler otomatik doldurulur. Kaydetmeden önce kontrol edin.</div></div>
     <div class="full"><label>Tesis adı *</label><input name="name" required maxlength="120"></div>
     <div class="full"><label>Adres *</label><input name="address" required maxlength="200" placeholder="Sokak, posta kodu, London">
       <div class="hint" id="geoHint">Konum adresten otomatik bulunur. Bulunamazsa aşağıya koordinat girin.</div></div>
@@ -85,9 +90,12 @@
     <div><label>Faturalar dahil mi</label><select name="bills"><option value="yes">Dahil</option><option value="no">Hariç</option><option value="">Bilinmiyor</option></select></div>
     <div><label>Mutfak</label><select name="kitchen"><option>Ortak</option><option>Özel</option><option>Yemekli</option><option>Bilinmiyor</option></select></div>
     <div><label>Banyo</label><select name="bathroom"><option>Ortak</option><option>Özel</option><option>Yarı özel</option><option>Bilinmiyor</option></select></div>
-    <div class="full"><label>Minimum kalış / sözleşme</label><input name="minStay" maxlength="200" placeholder="ör. en az 1 ay, 6 ay mümkün"></div>
+    <div><label>6 ay kiralanabiliyor mu?</label><select name="stay6"><option value="ask">Bilmiyorum / sorulmalı</option><option value="ok">Evet, 6 ay mümkün</option><option value="no">Hayır, sadece uzun sözleşme</option></select></div>
+    <div><label>Bu fiyatın sözleşme süresi (hafta)</label><input name="contractWeeks" type="number" min="1" max="60" placeholder="ör. 26 ya da 44"></div>
+    <div><label>Giriş – çıkış tarihleri</label><input name="moveIn" maxlength="80" placeholder="ör. 12 Eyl 2026 – 17 Tem 2027"></div>
+    <div><label>Depozito (£)</label><input name="deposit" type="number" step="1" min="0" max="20000"></div>
+    <div class="full"><label>Minimum kalış / sözleşme notu</label><input name="minStay" maxlength="200" placeholder="ör. en az 1 ay, 6 ay mümkün"></div>
     <div class="full"><label>Notlar</label><textarea name="notes" maxlength="1000"></textarea></div>
-    <div class="full"><label>Kaynak linki</label><input name="url" type="url" placeholder="https://"></div>
   </form>
   <div class="err" id="facErr"></div>
   <div class="mact"><button class="btn ghost small" data-close>Vazgeç</button><button class="btn small" id="facSave">Kaydet</button></div>

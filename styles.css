@@ -146,3 +146,12 @@ footer.site{border-top:1px solid var(--line);padding:18px 0 30px;font-size:12.5p
 @media(max-width:600px){.top h1{font-size:23px}.grid{grid-template-columns:1fr}.fg{grid-template-columns:1fr}.authbox span{display:none}}
 @media(max-width:900px){aside .panel{position:static}}
 @media(max-width:600px){.price div{padding:10px 10px}.price .v{font-size:17px}.price div:nth-child(3){display:none}.top .wrap{flex-direction:column}}
+
+.b.ok6{background:var(--green-soft);color:var(--green)}
+.b.ask6{background:#eee;color:var(--ink2)}
+.b.no6{background:var(--red-soft);color:var(--red)}
+.contract{margin:0 16px 12px;padding:8px 12px;border-radius:10px;background:var(--blue-soft);color:var(--ink2);font-size:13px}
+.contract.warn{background:var(--amber-soft);color:#6b4307}
+
+.afrow{display:flex;gap:8px}.afrow input{flex:1}.afrow .btn{white-space:nowrap}
+.autofill{background:var(--violet-soft);border-radius:12px;padding:12px}

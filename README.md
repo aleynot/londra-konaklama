@@ -144,3 +144,17 @@ Netlify'da **Domain management → Add a domain** ile kendi alan adınızı (ör
 
 ## Veriyi güncellemek
 `supabase/02_seed.sql` tekrar çalıştırılabilir: başlangıç kayıtlarını günceller, kullanıcıların eklediklerine dokunmaz. Şemayı (`01_schema.sql`) yeniden çalıştırmak da güvenlidir; yeni kurallar (ör. "Aile yanı" tipi) mevcut veritabanına uygulanır.
+
+## Linkten otomatik doldurma (yapay zekâ)
+"Konaklama ekle" formundaki **✨ Linkten doldur** düğmesi, `netlify/functions/extract.mjs` fonksiyonunu kullanır: ilan sayfasını okur ve Claude ile alanları çıkarır. Yalnızca giriş yapmış kullanıcılar kullanabilir.
+
+Netlify → **Project configuration → Environment variables** bölümüne şunları ekleyin, ardından **Deploys → Trigger deploy**:
+
+| Değişken | Değer |
+|---|---|
+| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys (gizli tutun, GitHub'a koymayın) |
+| `SUPABASE_URL` | `https://xmdqqdfeqnrsjeeazdxl.supabase.co` |
+| `SUPABASE_ANON_KEY` | Supabase publishable anahtar (config.js'tekiyle aynı) |
+| `ANTHROPIC_MODEL` | İsteğe bağlı; varsayılan `claude-haiku-5-5` |
+
+Bazı siteler otomatik okumayı engeller veya içeriği JavaScript ile yükler; o durumda form uyarı verir ve bilgiler elle girilir.

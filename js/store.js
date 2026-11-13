@@ -10,12 +10,14 @@
     id: r.id, name: r.name, address: r.address, lat: r.lat, lng: r.lng, type: r.type, gender: r.gender,
     occupants: r.occupants, unit: r.unit, price: Number(r.price), bills: r.bills, kitchen: r.kitchen,
     bathroom: r.bathroom, minStay: r.min_stay, notes: r.notes, url: r.url, verified: r.verified,
+    stay6: r.stay6, contractWeeks: r.contract_weeks, moveIn: r.move_in, deposit: r.deposit != null ? Number(r.deposit) : null,
     createdBy: r.created_by, createdAt: r.created_at
   });
   const facToRow = f => ({
     name: f.name, address: f.address, lat: f.lat, lng: f.lng, type: f.type, gender: f.gender,
     occupants: f.occupants, unit: f.unit, price: f.price, bills: f.bills || null, kitchen: f.kitchen,
-    bathroom: f.bathroom, min_stay: f.minStay || null, notes: f.notes || null, url: f.url || null
+    bathroom: f.bathroom, min_stay: f.minStay || null, notes: f.notes || null, url: f.url || null,
+    stay6: f.stay6 || "ask", contract_weeks: f.contractWeeks || null, move_in: f.moveIn || null, deposit: f.deposit != null ? f.deposit : null
   });
   const courseFromRow = r => ({ id: r.id, name: r.name, address: r.address, lat: r.lat, lng: r.lng, order: r.sort, createdBy: r.created_by });
 
@@ -67,6 +69,7 @@
         emit();
       },
       isAdmin() { return !!(S.profile && S.profile.is_admin); },
+      async accessToken() { const { data: { session } } = await sb.auth.getSession(); return session ? session.access_token : null; },
       async signInEmail(email) {
         const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
         if (error) throw error;
@@ -133,6 +136,7 @@
         emit();
       },
       isAdmin() { return !!S.user; },
+      async accessToken() { return null; },
       async signInEmail() { S.user = { id: "demo", email: "demo@ornek.com" }; save(); emit(); },
       async signInGoogle() { return this.signInEmail(); },
       async signOut() { S.user = null; save(); emit(); },

@@ -100,6 +100,22 @@ function routeBlock(f, c) {
     <span class="sm"><b>${r.changes === 0 ? "Aktarmasız" : r.changes + " aktarma"}</b> · ${r.km} km${r.source === "google" ? "" : " (kuş uçuşu)"} · tek yön <b>${r.fareEstimated ? "≈" : ""}${gbp2(r.fare)}</b> · aylık ≈ <b>${gbp(monthlyTransit(r))}</b></span>${srcTag(r)}</div>
     <div class="legs">${legsHtml(r)}</div>${link}</div>`;
 }
+function stayBadge(f) {
+  const s = f.stay6 || "ask";
+  if (s === "ok") return '<span class="b ok6">✓ 6 ay kiralanabilir</span>';
+  if (s === "no") return '<span class="b no6">✕ Sadece uzun sözleşme</span>';
+  return '<span class="b ask6">? 6 ay için sorulmalı</span>';
+}
+function contractLine(f) {
+  const parts = [];
+  if (f.contractWeeks) parts.push(`Bu fiyat <b>${f.contractWeeks} haftalık</b> sözleşme için`);
+  if (f.moveIn) parts.push(`giriş–çıkış: <b>${esc(f.moveIn)}</b>`);
+  if (f.contractWeeks) parts.push(`sözleşme toplamı ≈ <b>${gbp(weekly(f) * f.contractWeeks)}</b>`);
+  if (f.deposit != null) parts.push(`depozito <b>${gbp(f.deposit)}</b>`);
+  if (!parts.length) return "";
+  const warn = f.contractWeeks && f.contractWeeks > 30;
+  return `<div class="contract ${warn ? "warn" : ""}">${warn ? "⚠️ " : "📅 "}${parts.join(" · ")}${warn ? ". 6 aylık kalışta haftalık fiyat farklı olabilir." : ""}</div>`;
+}
 function card(f, c) {
   const favd = myFavs().includes(f.id), fc = favCount(f.id), w = weekly(f), m = monthly(f), mainW = ui.unit === "w";
   const occ = f.type === "Ev" && f.occupants ? `<span class="b type">🏠 Evde ${f.occupants} kişi</span>` : "";
@@ -108,10 +124,11 @@ function card(f, c) {
   return `<article class="card">
   <div class="hd"><div class="t"><h2>${esc(f.name)}</h2><div class="addr">${esc(f.address)}</div></div>
    <button class="fav ${favd ? "on" : ""}" data-fav="${esc(f.id)}" title="Favorilere ekle" aria-label="Favori">${favd ? ICON.heart : ICON.heartO}<span>${fc}</span></button></div>
-  <div class="badges"><span class="b type">${esc(f.type || "Rezidans")}</span>${genderBadge(f.gender)}${occ}${f.verified === false ? '<span class="b warn">Bazı bilgiler teyit bekliyor</span>' : ""}</div>
+  <div class="badges"><span class="b type">${esc(f.type || "Rezidans")}</span>${genderBadge(f.gender)}${occ}${stayBadge(f)}${f.verified === false ? '<span class="b warn">Bazı bilgiler teyit bekliyor</span>' : ""}</div>
+  ${contractLine(f)}
   <div class="price"><div class="${mainW ? "main" : ""}"><div class="k">Haftalık</div><div class="v">${gbp(w)}<small> /hafta</small></div></div>
    <div class="${mainW ? "" : "main"}"><div class="k">Aylık</div><div class="v">${gbp(m)}<small> /ay</small></div></div>
-   <div><div class="k">6 ay (26 hf)</div><div class="v" style="font-size:17px">${gbp(w * 26)}</div></div></div>
+   <div><div class="k">${f.contractWeeks && f.contractWeeks > 26 ? f.contractWeeks + " hf sözleşme" : "6 ay (26 hf)"}</div><div class="v" style="font-size:17px">${gbp(w * (f.contractWeeks && f.contractWeeks > 26 ? f.contractWeeks : 26))}</div></div></div>
   <div class="facil">${facItem("k", f.kitchen)}${facItem("b", f.bathroom)}</div>
   ${routeBlock(f, c)}
   <div class="extra">${f.minStay ? `<p><b>Kalış:</b> ${esc(f.minStay)}</p>` : ""}${f.bills ? `<p><b>Faturalar:</b> ${f.bills === "yes" ? "dahil" : "hariç"}</p>` : ""}${f.notes ? `<p>${esc(f.notes)}</p>` : ""}</div>
@@ -119,18 +136,18 @@ function card(f, c) {
  </article>`;
 }
 function filtered() {
-  const g = $("#fGender").value, t = $("#fType").value, k = $("#fKitchen").value, b = $("#fBath").value, max = +$("#fMax").value || 0, favOnly = $("#fFav").checked, sort = $("#fSort").value;
+  const st = $("#fStay").value, g = $("#fGender").value, t = $("#fType").value, k = $("#fKitchen").value, b = $("#fBath").value, max = +$("#fMax").value || 0, favOnly = $("#fFav").checked, sort = $("#fSort").value;
   const c = currentCourse(), mf = myFavs();
-  const L = Store.facilities.filter(f => (!g || f.gender === g) && (!t || f.type === t) && (!k || f.kitchen === k) && (!b || f.bathroom === b) && (!max || weekly(f) <= max) && (!favOnly || mf.includes(f.id)));
+  const L = Store.facilities.filter(f => (!g || f.gender === g) && (!t || f.type === t) && (!k || f.kitchen === k) && (!b || f.bathroom === b) && (!max || weekly(f) <= max) && (!favOnly || mf.includes(f.id)) && (!st || (st === "ok" ? f.stay6 === "ok" : f.stay6 !== "no")));
   const time = f => { const r = getRoute(f, c); return r ? r.minutes : 9999; };
   L.sort(sort === "price" ? (a, b) => weekly(a) - weekly(b) : sort === "fav" ? (a, b) => favCount(b.id) - favCount(a.id) : sort === "name" ? (a, b) => a.name.localeCompare(b.name, "tr") : (a, b) => time(a) - time(b));
   return L;
 }
 function tableView(L) {
   const cs = Store.courses, cur = currentCourse();
-  const head = `<tr><th>Tesis</th><th>Kimler</th><th>Haftalık</th><th>Aylık</th><th>Mutfak / Banyo</th>${cs.map(c => `<th class="${cur && c.id === cur.id ? "hl" : ""}">${esc(c.name)}</th>`).join("")}</tr>`;
+  const head = `<tr><th>Tesis</th><th>Kimler</th><th>6 ay</th><th>Haftalık</th><th>Aylık</th><th>Mutfak / Banyo</th>${cs.map(c => `<th class="${cur && c.id === cur.id ? "hl" : ""}">${esc(c.name)}</th>`).join("")}</tr>`;
   const rows = L.map(f => `<tr><td><b>${esc(f.name)}</b><br><span style="color:var(--muted);font-size:12px">${esc(f.type)}${f.type === "Ev" && f.occupants ? ` · ${f.occupants} kişi` : ""}</span></td>
-  <td>${esc(f.gender || "—")}</td><td class="n">${gbp(weekly(f))}</td><td class="n">${gbp(monthly(f))}</td><td>${esc(f.kitchen || "?")} / ${esc(f.bathroom || "?")}</td>
+  <td>${esc(f.gender || "—")}</td><td>${{ok:"✓ Uygun",no:"✕ Uzun sözleşme"}[f.stay6]||"? Sorulmalı"}${f.contractWeeks?`<br><span style="color:var(--muted);font-size:12px">${f.contractWeeks} hf</span>`:""}</td><td class="n">${gbp(weekly(f))}</td><td class="n">${gbp(monthly(f))}</td><td>${esc(f.kitchen || "?")} / ${esc(f.bathroom || "?")}</td>
   ${cs.map(c => { const r = getRoute(f, c); const hl = cur && c.id === cur.id ? "hl" : ""; return `<td class="${hl}"><a href="${esc(gmaps(f, c))}" target="_blank" rel="noopener"><span class="cell">${r ? (r.mode === "walk" ? r.minutes + " dk 🚶" : (r.source === "google" ? "" : "~") + r.minutes + " dk") : "—"}<small>${r ? (r.mode === "walk" ? "yürüme" : (r.changes === 0 ? "aktarmasız" : r.changes + " aktarma") + " · " + gbp2(r.fare)) : "Haritada aç"}</small></span></a></td>`; }).join("")}</tr>`).join("");
   return `<div class="tablewrap"><table class="cmp"><thead>${head}</thead><tbody>${rows}</tbody></table></div><div class="note" style="margin-top:10px">Hücreye tıklayınca o tesis–kurs rotası Google Haritalar’da açılır. "~" işaretli süreler tahminidir.</div>`;
 }
@@ -206,7 +223,7 @@ document.addEventListener("click", async e => {
   else if (t.parentElement.id === "unitSeg") { ui.unit = t.dataset.v; try { localStorage.setItem("lk_unit", ui.unit); } catch (e) {} syncUnit(); render(); }
 });
 function syncUnit() { document.querySelectorAll("#unitSeg button").forEach(b => b.classList.toggle("on", b.dataset.v === ui.unit)); }
-["#fGender", "#fType", "#fKitchen", "#fBath", "#fMax", "#fSort", "#fFav"].forEach(s => $(s).addEventListener("input", render));
+["#fStay", "#fGender", "#fType", "#fKitchen", "#fBath", "#fMax", "#fSort", "#fFav"].forEach(s => $(s).addEventListener("input", render));
 document.querySelectorAll(".modal-bg").forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open"); }));
 document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".modal-bg.open").forEach(m => m.classList.remove("open")); });
 
@@ -239,6 +256,38 @@ $("#loginSend").addEventListener("click", async () => {
 $("#loginForm").addEventListener("submit", e => { e.preventDefault(); $("#loginSend").click(); });
 if (cfg.enableGoogleLogin && Store.mode !== "demo") { $("#googleLoginWrap").hidden = false; $("#googleLogin").addEventListener("click", () => Store.signInGoogle().catch(e => { $("#loginErr").textContent = e.message || e; })); }
 
+// ---------- Linkten otomatik doldurma ----------
+async function callExtract(payload, token) {
+  const r = await fetch("/.netlify/functions/extract", { method: "POST", headers: { "content-type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(payload) });
+  let d = null; try { d = await r.json(); } catch (e) {}
+  if (!r.ok || !d) throw new Error((d && d.error) || (r.status === 404 ? "Otomatik doldurma sunucuda kurulu değil." : "Sunucu hatası (" + r.status + ")."));
+  return d;
+}
+$("#autofillBtn").addEventListener("click", async () => {
+  const fm = $("#facForm"), hint = $("#autofillHint"), btn = $("#autofillBtn"), url = fm.url.value.trim();
+  if (!/^https?:\/\//.test(url)) { hint.innerHTML = '<span style="color:var(--red)">Önce http(s) ile başlayan bir link yapıştırın.</span>'; return; }
+  if (Store.mode === "demo") { hint.innerHTML = '<span style="color:var(--red)">Demo modunda otomatik doldurma çalışmaz.</span>'; return; }
+  const token = await Store.accessToken();
+  if (!token) { hint.innerHTML = '<span style="color:var(--red)">Bu özellik için giriş yapın.</span>'; return; }
+  btn.disabled = true;
+  try {
+    hint.textContent = "1/2 Sayfa okunuyor…";
+    const { text } = await callExtract({ url }, token);
+    hint.textContent = "2/2 Bilgiler çıkarılıyor…";
+    const { listing: L } = await callExtract({ url, text }, token);
+    const set = (n, v) => { if (v === undefined || v === null || v === "") return; const el = fm.elements[n]; if (el) el.value = v; };
+    set("name", L.name); set("address", L.address); set("type", L.type); set("gender", L.gender);
+    set("occupants", L.occupants); set("unit", L.unit); set("price", L.price); set("bills", L.bills);
+    set("kitchen", L.kitchen); set("bathroom", L.bathroom); set("stay6", L.stay6); set("contractWeeks", L.contractWeeks);
+    set("moveIn", L.moveIn); set("deposit", L.deposit); set("minStay", L.minStay); set("notes", L.notes);
+    if (L.gender === "") fm.elements.gender.value = "";
+    hint.innerHTML = '<span style="color:var(--green)">✓ Bilgiler dolduruldu — lütfen kontrol edip Kaydet deyin.</span>' + (L.warnings ? '<br><span style="color:var(--amber)">Not: ' + esc(L.warnings) + '</span>' : "");
+  } catch (e) {
+    hint.innerHTML = '<span style="color:var(--red)">' + esc(e.message || e) + '</span>';
+  }
+  btn.disabled = false;
+});
+
 $("#facSave").addEventListener("click", async () => {
   const fm = $("#facForm"), d = Object.fromEntries(new FormData(fm).entries()), err = $("#facErr"); err.textContent = "";
   if (!d.name.trim() || !d.address.trim() || !(+d.price > 0)) { err.textContent = "Ad, adres ve fiyat zorunlu."; return; }
@@ -247,7 +296,7 @@ $("#facSave").addEventListener("click", async () => {
   try {
     const co = await locate(d.coords, d.address, $("#geoHint"));
     const f = { name: d.name.trim(), address: d.address.trim(), type: d.type, gender: d.gender || null, occupants: d.type === "Ev" && +d.occupants ? +d.occupants : null, unit: d.unit, price: +(+d.price).toFixed(2),
-      bills: d.bills || null, kitchen: d.kitchen, bathroom: d.bathroom, minStay: d.minStay.trim(), notes: d.notes.trim(), url: d.url.trim(), lat: co ? co[0] : null, lng: co ? co[1] : null };
+      bills: d.bills || null, kitchen: d.kitchen, bathroom: d.bathroom, minStay: d.minStay.trim(), stay6: d.stay6, contractWeeks: +d.contractWeeks || null, moveIn: d.moveIn.trim() || null, deposit: d.deposit !== "" ? +d.deposit : null, notes: d.notes.trim(), url: d.url.trim(), lat: co ? co[0] : null, lng: co ? co[1] : null };
     await Store.addFacility(f); fm.reset(); $("#facModal").classList.remove("open");
     toast(co ? "Tesis eklendi." : "Tesis eklendi, ancak konumu bulunamadı — ulaşım süresi hesaplanamayacak.");
   } catch (e) { err.textContent = e.message && !e.code ? e.message : "Kaydedilemedi: " + (e.message || e); }
