@@ -257,6 +257,11 @@ $("#loginForm").addEventListener("submit", e => { e.preventDefault(); $("#loginS
 if (cfg.enableGoogleLogin && Store.mode !== "demo") { $("#googleLoginWrap").hidden = false; $("#googleLogin").addEventListener("click", () => Store.signInGoogle().catch(e => { $("#loginErr").textContent = e.message || e; })); }
 
 // ---------- Linkten otomatik doldurma ----------
+function clearMissing(fm) {
+  fm.querySelectorAll(".missing").forEach(el => { el.classList.remove("missing"); if (el.dataset.ph !== undefined) { el.placeholder = el.dataset.ph; delete el.dataset.ph; } });
+}
+$("#facForm").addEventListener("input", e => { const el = e.target; if (el.classList.contains("missing") && el.value && el.value !== "Bilinmiyor") { el.classList.remove("missing"); if (el.dataset.ph !== undefined) { el.placeholder = el.dataset.ph; delete el.dataset.ph; } } });
+$("#facForm").addEventListener("reset", e => clearMissing(e.target));
 async function callExtract(payload, token) {
   const r = await fetch("/.netlify/functions/extract", { method: "POST", headers: { "content-type": "application/json", Authorization: "Bearer " + token }, body: JSON.stringify(payload) });
   let d = null; try { d = await r.json(); } catch (e) {}
@@ -275,13 +280,30 @@ $("#autofillBtn").addEventListener("click", async () => {
     const { text } = await callExtract({ url }, token);
     hint.textContent = "2/2 Bilgiler çıkarılıyor…";
     const { listing: L } = await callExtract({ url, text }, token);
-    const set = (n, v) => { if (v === undefined || v === null || v === "") return; const el = fm.elements[n]; if (el) el.value = v; };
+    const LABELS = { name: "Tesis adı", address: "Adres", gender: "Kimler kalıyor", occupants: "Evde kaç kişi", price: "Fiyat", bills: "Faturalar", kitchen: "Mutfak", bathroom: "Banyo", contractWeeks: "Sözleşme süresi", moveIn: "Giriş–çıkış tarihleri", deposit: "Depozito", minStay: "Kalış koşulları" };
+    const missing = [];
+    clearMissing(fm);
+    const set = (n, v) => {
+      const el = fm.elements[n]; if (!el) return;
+      const empty = v === undefined || v === null || v === "" || v === "Bilinmiyor";
+      if (n === "occupants" && L.type !== "Ev") return;           // ev değilse kişi sayısı aranmaz
+      if (empty) {
+        if (LABELS[n]) missing.push(LABELS[n]);
+        el.classList.add("missing");
+        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") { el.value = ""; el.dataset.ph = el.placeholder; el.placeholder = "Bulunamadı — elle girin"; }
+        if (v === "Bilinmiyor") el.value = v;
+        return;
+      }
+      el.value = v;
+    };
     set("name", L.name); set("address", L.address); set("type", L.type); set("gender", L.gender);
     set("occupants", L.occupants); set("unit", L.unit); set("price", L.price); set("bills", L.bills);
     set("kitchen", L.kitchen); set("bathroom", L.bathroom); set("stay6", L.stay6); set("contractWeeks", L.contractWeeks);
     set("moveIn", L.moveIn); set("deposit", L.deposit); set("minStay", L.minStay); set("notes", L.notes);
     if (L.gender === "") fm.elements.gender.value = "";
-    hint.innerHTML = '<span style="color:var(--green)">✓ Bilgiler dolduruldu — lütfen kontrol edip Kaydet deyin.</span>' + (L.warnings ? '<br><span style="color:var(--amber)">Not: ' + esc(L.warnings) + '</span>' : "");
+    hint.innerHTML = '<span style="color:var(--green)">✓ Bulunan bilgiler dolduruldu — lütfen kontrol edip Kaydet deyin.</span>'
+      + (missing.length ? '<br><span style="color:var(--red)">Bulunamadı: ' + esc(missing.join(", ")) + ' (kırmızı çerçeveli alanları elle doldurun)</span>' : "")
+      + (L.warnings ? '<br><span style="color:var(--amber)">Not: ' + esc(L.warnings) + '</span>' : "");
   } catch (e) {
     hint.innerHTML = '<span style="color:var(--red)">' + esc(e.message || e) + '</span>';
   }
