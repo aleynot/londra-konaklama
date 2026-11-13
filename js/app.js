@@ -344,5 +344,8 @@ Store.onChange(scheduleRender);
 $("#demoBar").hidden = Store.mode !== "demo";
 syncUnit(); renderNote(); render();
 if (G.enabled) G.load();
+// Ziyaret sayacı (IP saklanmaz; bkz. supabase/04_ziyaret_sayaci.sql)
+(() => { let ref = ""; try { const u = new URL(document.referrer); if (u.host !== location.host) ref = u.host; } catch (e) {}
+  setTimeout(() => Store.logVisit && Store.logVisit(location.pathname + location.hash, ref), 1500); })();
 Store.init().catch(e => { console.error(e); setStatus("Veriler yüklenemedi: " + (e.message || e) + " — config.js ve Supabase kurulumunu kontrol edin."); });
 })();

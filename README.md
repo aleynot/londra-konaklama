@@ -161,3 +161,6 @@ Netlify'da **Domain management → Add a domain** ile kendi alan adınızı (ör
 3. **Deploys → Trigger deploy → Deploy site.**
 
 Ücretsiz katmanın günlük/dakikalık istek sınırı vardır; dolarsa form "biraz sonra tekrar deneyin" der. Google, ücretsiz katmana gönderilen içeriği ürünlerini geliştirmek için kullanabilir (burada yalnızca herkese açık ilan sayfaları gönderilir). Bazı siteler otomatik okumayı engeller veya içeriği JavaScript ile yükler; o durumda bilgiler elle girilir.
+
+## Ziyaret sayacı
+`supabase/04_ziyaret_sayaci.sql` bir kez çalıştırıldıktan sonra her sayfa açılışı Supabase'deki `visits` tablosuna yazılır. IP adresi saklanmaz; her gün değişen gizli bir anahtarla geri çevrilemez bir koda dönüştürülür (aynı gün aynı IP = tek ziyaretçi). Raporlar için `supabase/ziyaret_raporlari.sql` içindeki sorguları SQL Editor'da çalıştırın.

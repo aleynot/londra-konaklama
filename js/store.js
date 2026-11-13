@@ -70,6 +70,7 @@
       },
       isAdmin() { return !!(S.profile && S.profile.is_admin); },
       async accessToken() { const { data: { session } } = await sb.auth.getSession(); return session ? session.access_token : null; },
+      async logVisit(path, referrer) { try { await sb.rpc("log_visit", { p_path: path, p_referrer: referrer }); } catch (e) {} },
       async signInEmail(email) {
         const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname } });
         if (error) throw error;
@@ -137,6 +138,7 @@
       },
       isAdmin() { return !!S.user; },
       async accessToken() { return null; },
+      async logVisit() {},
       async signInEmail() { S.user = { id: "demo", email: "demo@ornek.com" }; save(); emit(); },
       async signInGoogle() { return this.signInEmail(); },
       async signOut() { S.user = null; save(); emit(); },
