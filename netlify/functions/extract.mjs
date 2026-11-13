@@ -9,6 +9,9 @@
 //   SUPABASE_ANON_KEY            — publishable / anon anahtar
 //   GEMINI_MODEL        (isteğe bağlı; varsayılan gemini-3.5-flash-lite)
 
+// Supabase adresi ve publishable anahtar zaten herkese açık (config.js); ortam değişkeni yoksa bunlar kullanılır.
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://xmdqqdfeqnrsjeeazdxl.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_3Oc6bKI40_7vOGh_1LTONw_-pJhjTR5";
 const MAX_HTML = 2_000_000;   // indirilecek en fazla sayfa boyutu
 const MAX_TEXT = 24_000;      // modele gönderilecek en fazla metin
 
@@ -28,8 +31,8 @@ async function verifyUser(req) {
   const auth = req.headers.get("authorization") || "";
   const token = auth.replace(/^Bearer\s+/i, "");
   if (!token) return null;
-  const r = await fetch(process.env.SUPABASE_URL + "/auth/v1/user", {
-    headers: { Authorization: "Bearer " + token, apikey: process.env.SUPABASE_ANON_KEY }
+  const r = await fetch(SUPABASE_URL + "/auth/v1/user", {
+    headers: { Authorization: "Bearer " + token, apikey: SUPABASE_ANON_KEY }
   });
   if (!r.ok) return null;
   return r.json();
@@ -100,7 +103,7 @@ const MODELS = [process.env.GEMINI_MODEL, "gemini-3.5-flash-lite", "gemini-flash
 
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Yalnızca POST" });
-  for (const k of ["GEMINI_API_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY"])
+  for (const k of ["GEMINI_API_KEY"])
     if (!process.env[k]) return json(500, { error: `Sunucu ayarı eksik: ${k} (Netlify ortam değişkenleri)` });
 
   const user = await verifyUser(req).catch(() => null);
