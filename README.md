@@ -145,16 +145,19 @@ Netlify'da **Domain management → Add a domain** ile kendi alan adınızı (ör
 ## Veriyi güncellemek
 `supabase/02_seed.sql` tekrar çalıştırılabilir: başlangıç kayıtlarını günceller, kullanıcıların eklediklerine dokunmaz. Şemayı (`01_schema.sql`) yeniden çalıştırmak da güvenlidir; yeni kurallar (ör. "Aile yanı" tipi) mevcut veritabanına uygulanır.
 
-## Linkten otomatik doldurma (yapay zekâ)
-"Konaklama ekle" formundaki **✨ Linkten doldur** düğmesi, `netlify/functions/extract.mjs` fonksiyonunu kullanır: ilan sayfasını okur ve Claude ile alanları çıkarır. Yalnızca giriş yapmış kullanıcılar kullanabilir.
+## Linkten otomatik doldurma (yapay zekâ, ücretsiz)
+"Konaklama ekle" formundaki **✨ Linkten doldur** düğmesi, `netlify/functions/extract.mjs` fonksiyonunu kullanır: ilan sayfasını okur ve Google Gemini'nin **ücretsiz katmanıyla** alanları çıkarır. Yalnızca giriş yapmış kullanıcılar kullanabilir.
 
-Netlify → **Project configuration → Environment variables** bölümüne şunları ekleyin, ardından **Deploys → Trigger deploy**:
+1. https://aistudio.google.com/apikey → **Create API key** → **yeni bir proje oluşturarak** anahtar alın. Faturalandırması açık bir Google Cloud projesi (ör. Maps için kullandığınız) seçerseniz kullanım ücretli olur; ücretsiz kalmak için faturalandırmasız yeni proje seçin.
+2. Netlify → **Project configuration → Environment variables**:
 
 | Değişken | Değer |
 |---|---|
-| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys (gizli tutun, GitHub'a koymayın) |
+| `GEMINI_API_KEY` | AI Studio'dan aldığınız anahtar (gizli tutun, GitHub'a koymayın) |
 | `SUPABASE_URL` | `https://xmdqqdfeqnrsjeeazdxl.supabase.co` |
 | `SUPABASE_ANON_KEY` | Supabase publishable anahtar (config.js'tekiyle aynı) |
-| `ANTHROPIC_MODEL` | İsteğe bağlı; varsayılan `claude-haiku-5-5` |
+| `GEMINI_MODEL` | İsteğe bağlı; varsayılan `gemini-3.5-flash-lite` |
 
-Bazı siteler otomatik okumayı engeller veya içeriği JavaScript ile yükler; o durumda form uyarı verir ve bilgiler elle girilir.
+3. **Deploys → Trigger deploy → Deploy site.**
+
+Ücretsiz katmanın günlük/dakikalık istek sınırı vardır; dolarsa form "biraz sonra tekrar deneyin" der. Google, ücretsiz katmana gönderilen içeriği ürünlerini geliştirmek için kullanabilir (burada yalnızca herkese açık ilan sayfaları gönderilir). Bazı siteler otomatik okumayı engeller veya içeriği JavaScript ile yükler; o durumda bilgiler elle girilir.

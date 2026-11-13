@@ -1,13 +1,13 @@
 // Netlify Function: bir konaklama sayfasının linkinden bilgileri çıkarır.
 // Netlify'ın 10 saniyelik süre sınırı nedeniyle iki adımda çalışır:
 //   1) POST { url }              → sayfayı indirir, metne çevirir      → { text }
-//   2) POST { url, text }        → metni Claude'a gönderir, alanları çıkarır → { listing }
+//   2) POST { url, text }        → metni Gemini'ye gönderir, alanları çıkarır → { listing }
 // Her iki adımda da Authorization: Bearer <Supabase oturum token'ı> gerekir.
 // Gerekli ortam değişkenleri (Netlify → Project configuration → Environment variables):
-//   ANTHROPIC_API_KEY   (gizli)  — console.anthropic.com
+//   GEMINI_API_KEY      (gizli)  — aistudio.google.com/apikey (ücretsiz katman)
 //   SUPABASE_URL                 — https://xxxx.supabase.co
 //   SUPABASE_ANON_KEY            — publishable / anon anahtar
-//   ANTHROPIC_MODEL     (isteğe bağlı, varsayılan claude-haiku-5-5)
+//   GEMINI_MODEL        (isteğe bağlı; varsayılan gemini-3.5-flash-lite)
 
 const MAX_HTML = 2_000_000;   // indirilecek en fazla sayfa boyutu
 const MAX_TEXT = 24_000;      // modele gönderilecek en fazla metin
@@ -55,37 +55,52 @@ function htmlToText(html) {
   return [`TITLE: ${title.trim()}`, ...metas, ...keep, "TEXT:\n" + body].join("\n").slice(0, MAX_TEXT);
 }
 
-const TOOL = {
-  name: "save_listing",
-  description: "Londra'daki öğrenci konaklama ilanından çıkarılan bilgileri kaydeder.",
-  input_schema: {
-    type: "object",
-    properties: {
-      name: { type: "string", description: "Tesisin adı" },
-      address: { type: "string", description: "Sokak, posta kodu, London. Bilinmiyorsa boş." },
-      type: { type: "string", enum: ["Rezidans", "Hostel / Vakıf yurdu", "Ev", "Aile yanı"] },
-      gender: { type: "string", enum: ["Karma", "Sadece kadın", "Sadece erkek", ""], description: "Belirtilmemişse boş" },
-      occupants: { type: ["integer", "null"], description: "Ev ise evde kalan toplam kişi/oda sayısı" },
-      price: { type: ["number", "null"], description: "En uygun oda/seçeneğin fiyatı (sayı, £)" },
-      unit: { type: "string", enum: ["w", "m"], description: "w = haftalık, m = aylık" },
-      bills: { type: "string", enum: ["yes", "no", ""], description: "Faturalar dahil mi" },
-      kitchen: { type: "string", enum: ["Ortak", "Özel", "Yemekli", "Bilinmiyor"] },
-      bathroom: { type: "string", enum: ["Ortak", "Özel", "Yarı özel", "Bilinmiyor"] },
-      stay6: { type: "string", enum: ["ok", "ask", "no"], description: "ok: 6 ay (≈26 hafta) veya daha kısa kiralama açıkça mümkün; no: yalnızca 6 aydan uzun sözleşmeler; ask: belirsiz" },
-      contractWeeks: { type: ["integer", "null"], description: "Fiyatın ait olduğu sözleşme süresi (hafta)" },
-      moveIn: { type: "string", description: "Giriş–çıkış tarihleri, ör. '12 Eyl 2026 – 17 Tem 2027'; yoksa boş" },
-      deposit: { type: ["number", "null"], description: "Depozito (£)" },
-      minStay: { type: "string", description: "Kalış/sözleşme koşullarının Türkçe kısa özeti" },
-      notes: { type: "string", description: "Türkçe: diğer oda tipleri ve fiyatları, önemli koşullar, uygunluk kısıtları. En fazla 600 karakter." },
-      warnings: { type: "string", description: "Türkçe: sayfada bulunamayan veya emin olunamayan bilgiler" }
-    },
-    required: ["name", "type", "unit", "kitchen", "bathroom", "stay6", "notes"]
-  }
+// Çıkarılacak alanlar (modele açıklama olarak verilir, dönen veri sunucuda doğrulanır)
+const FIELDS = `{
+  "name": "Tesisin adı (metin)",
+  "address": "Sokak, posta kodu, London; bilinmiyorsa \"\"",
+  "type": "Rezidans | Hostel / Vakıf yurdu | Ev | Aile yanı",
+  "gender": "Karma | Sadece kadın | Sadece erkek | \"\" (belirtilmemişse)",
+  "occupants": "Ev ise evdeki toplam kişi/oda sayısı (tam sayı) ya da null",
+  "price": "En uygun oda/seçeneğin fiyatı (sayı, £) ya da null",
+  "unit": "w (haftalık) | m (aylık)",
+  "bills": "yes | no | \"\" (faturalar dahil mi)",
+  "kitchen": "Ortak | Özel | Yemekli | Bilinmiyor",
+  "bathroom": "Ortak | Özel | Yarı özel | Bilinmiyor",
+  "stay6": "ok (6 ay ya da daha kısa kiralama açıkça mümkün) | no (yalnızca 6 aydan uzun sözleşmeler) | ask (belirsiz)",
+  "contractWeeks": "Fiyatın ait olduğu sözleşme süresi, hafta (tam sayı) ya da null",
+  "moveIn": "Giriş–çıkış tarihleri, ör. 12 Eyl 2026 – 17 Tem 2027; yoksa \"\"",
+  "deposit": "Depozito £ (sayı) ya da null",
+  "minStay": "Kalış/sözleşme koşullarının Türkçe kısa özeti",
+  "notes": "Türkçe: diğer oda tipleri ve fiyatları, önemli koşullar, uygunluk kısıtları (en fazla 600 karakter)",
+  "warnings": "Türkçe: sayfada bulunamayan veya emin olunamayan bilgiler"
+}`;
+const ENUMS = {
+  type: ["Rezidans", "Hostel / Vakıf yurdu", "Ev", "Aile yanı"],
+  gender: ["Karma", "Sadece kadın", "Sadece erkek", ""],
+  unit: ["w", "m"], bills: ["yes", "no", ""],
+  kitchen: ["Ortak", "Özel", "Yemekli", "Bilinmiyor"],
+  bathroom: ["Ortak", "Özel", "Yarı özel", "Bilinmiyor"],
+  stay6: ["ok", "ask", "no"]
 };
+const DEFAULTS = { type: "Rezidans", gender: "", unit: "w", bills: "", kitchen: "Bilinmiyor", bathroom: "Bilinmiyor", stay6: "ask" };
+function clean(o) {
+  const out = {};
+  const str = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+  const num = (v, min, max, int) => { const x = typeof v === "string" ? parseFloat(v.replace(/[^0-9.]/g, "")) : v; return typeof x === "number" && isFinite(x) && x >= min && x <= max ? (int ? Math.round(x) : Math.round(x * 100) / 100) : null; };
+  out.name = str(o.name, 120); out.address = str(o.address, 200);
+  for (const k of Object.keys(ENUMS)) out[k] = ENUMS[k].includes(o[k]) ? o[k] : DEFAULTS[k];
+  out.occupants = num(o.occupants, 1, 30, true); out.price = num(o.price, 1, 19999, false);
+  out.contractWeeks = num(o.contractWeeks, 1, 60, true); out.deposit = num(o.deposit, 0, 19999, false);
+  out.moveIn = str(o.moveIn, 80); out.minStay = str(o.minStay, 200); out.notes = str(o.notes, 1000); out.warnings = str(o.warnings, 400);
+  return out;
+}
+// Ücretsiz katmanda denenecek modeller (ilk çalışan kullanılır). GEMINI_MODEL ile değiştirilebilir.
+const MODELS = [process.env.GEMINI_MODEL, "gemini-3.5-flash-lite", "gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-flash-latest"].filter(Boolean);
 
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Yalnızca POST" });
-  for (const k of ["ANTHROPIC_API_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY"])
+  for (const k of ["GEMINI_API_KEY", "SUPABASE_URL", "SUPABASE_ANON_KEY"])
     if (!process.env[k]) return json(500, { error: `Sunucu ayarı eksik: ${k} (Netlify ortam değişkenleri)` });
 
   const user = await verifyUser(req).catch(() => null);
@@ -120,36 +135,51 @@ export default async (req) => {
 
 async function extract(url, text) {
   const prompt = `Aşağıda Londra'daki bir öğrenci konaklama ilanının sayfa metni var (kaynak: ${url.href}). Bugünün tarihi ${new Date().toISOString().slice(0, 10)}.
-Kullanıcı Londra'da yaklaşık 6 ay kalacak bir dil okulu öğrencisi. Bilgileri save_listing aracıyla kaydet.
+Kullanıcı Londra'da yaklaşık 6 ay kalacak bir dil okulu öğrencisi.
+Yalnızca şu alanlara sahip TEK bir JSON nesnesi döndür (başka metin yazma):
+${FIELDS}
 Kurallar:
-- Yalnızca sayfada yazanları kullan; tahmin etme. Bulamadığın alanları boş/null/"Bilinmiyor" bırak ve warnings'e yaz.
-- price: en uygun seçeneğin fiyatı. Hangi süreye ait olduğunu contractWeeks ve moveIn'e yaz.
+- Yalnızca sayfada yazanları kullan; tahmin etme. Bulamadığın alanları "" / null / "Bilinmiyor" bırak ve warnings'e yaz.
+- price: en uygun seçeneğin fiyatı; hangi süreye ait olduğunu contractWeeks ve moveIn'e yaz.
 - En-suite = özel banyo; stüdyo = özel mutfak + özel banyo; "shared kitchen" = Ortak; yemek dahil ise Yemekli.
-- notes ve minStay Türkçe olsun.
+- minStay, notes ve warnings Türkçe olsun.
 
 SAYFA:
 ${text}`;
 
-  const ar = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({
-      model: process.env.ANTHROPIC_MODEL || "claude-haiku-5-5",
-      max_tokens: 1200,
-      tools: [TOOL],
-      tool_choice: { type: "tool", name: "save_listing" },
-      messages: [{ role: "user", content: prompt }]
-    }),
-    signal: AbortSignal.timeout(9500)
-  }).catch(() => null);
-  if (!ar) return json(504, { error: "Yapay zekâ servisi zamanında yanıt vermedi." });
-  if (!ar.ok) {
-    const t = await ar.text().catch(() => "");
-    console.error("Anthropic hata", ar.status, t.slice(0, 500));
-    return json(502, { error: ar.status === 401 ? "Anthropic API anahtarı geçersiz." : ar.status === 429 ? "Yapay zekâ kullanım sınırına ulaşıldı, biraz sonra deneyin." : "Yapay zekâ servisi hata verdi (" + ar.status + ")." });
+  const started = Date.now();
+  let lastErr = "Yapay zekâ servisi yanıt vermedi.";
+  for (const model of MODELS) {
+    const left = 9300 - (Date.now() - started);
+    if (left < 2500) break;
+    let r;
+    try {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 1500 }
+        }),
+        signal: AbortSignal.timeout(left)
+      });
+    } catch (e) { return json(504, { error: "Yapay zekâ zamanında yanıt vermedi; tekrar deneyin." }); }
+    if (r.status === 404) { lastErr = "Model bulunamadı: " + model; continue; }   // sıradaki modeli dene
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      console.error("Gemini hata", model, r.status, t.slice(0, 500));
+      if (r.status === 429) return json(429, { error: "Ücretsiz günlük/dakikalık kullanım sınırı doldu; biraz sonra tekrar deneyin." });
+      if (r.status === 400 && /API key/i.test(t)) return json(502, { error: "Gemini API anahtarı geçersiz." });
+      if (r.status === 403) return json(502, { error: "Gemini API anahtarının yetkisi yok (anahtarı ve projeyi kontrol edin)." });
+      return json(502, { error: "Yapay zekâ servisi hata verdi (" + r.status + ")." });
+    }
+    const data = await r.json().catch(() => null);
+    const raw = data && data.candidates && data.candidates[0] && data.candidates[0].content && (data.candidates[0].content.parts || []).map(p => p.text || "").join("");
+    if (!raw) return json(502, { error: "Bilgiler çıkarılamadı (boş yanıt)." });
+    let obj;
+    try { obj = JSON.parse(raw.replace(/^```(?:json)?\s*|\s*```$/g, "")); } catch { return json(502, { error: "Yapay zekâ yanıtı okunamadı; tekrar deneyin." }); }
+    if (Array.isArray(obj)) obj = obj[0] || {};
+    return json(200, { listing: clean(obj), url: url.href, model });
   }
-  const data = await ar.json();
-  const tool = (data.content || []).find(c => c.type === "tool_use");
-  if (!tool) return json(502, { error: "Bilgiler çıkarılamadı." });
-  return json(200, { listing: tool.input, url: url.href });
+  return json(502, { error: lastErr });
 }
