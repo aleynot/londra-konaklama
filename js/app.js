@@ -50,7 +50,7 @@ function requestGoogle(f, c, force) {
   gTried.add(key);
   return G.route(key, { lat: f.lat, lng: f.lng }, { lat: c.lat, lng: c.lng }).then(async r => {
     if (r) { await Store.saveRoute(f.id, c.id, r); scheduleRender(); }
-    else gTried.delete(key); // sonraki yenilemede tekrar denensin
+    // başarısız rota bu oturumda tekrar istenmez (Google kotası boşa harcanmasın); sayfa yenilenince yeniden denenir
     return r;
   });
 }

@@ -137,23 +137,24 @@
   G.renderMap = async function (el, facilities, course, getRoute, colorFor, gmapsLink, gbp) {
     if (!(await G.load())) return false;
     const { Map, InfoWindow } = await google.maps.importLibrary("maps");
-    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
-    const map = new Map(el, { center: { lat: 51.505, lng: -0.12 }, zoom: 11, mapId: cfg.googleMapId || "DEMO_MAP_ID", streetViewControl: false, mapTypeControl: false });
+    const { Marker } = await google.maps.importLibrary("marker");
+    // Harita kimliği (mapId) gerektirmeyen klasik işaretçiler kullanılır
+    const map = new Map(el, { center: { lat: 51.505, lng: -0.12 }, zoom: 11, streetViewControl: false, mapTypeControl: false, clickableIcons: false });
     const info = new InfoWindow(); const bounds = new google.maps.LatLngBounds();
     const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     for (const f of facilities) {
       if (!f.lat) continue; const r = getRoute(f, course);
-      const pin = new PinElement({ background: colorFor(r ? r.minutes : null), borderColor: "#fff", glyphColor: "#fff" });
-      const m = new AdvancedMarkerElement({ map, position: { lat: f.lat, lng: f.lng }, title: f.name, content: pin.element });
+      const m = new Marker({ map, position: { lat: f.lat, lng: f.lng }, title: f.name,
+        icon: { path: google.maps.SymbolPath.CIRCLE, scale: 9, fillColor: colorFor(r ? r.minutes : null), fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 2 } });
       m.addListener("click", () => {
-        info.setContent(`<div style="font:14px/1.4 'IBM Plex Sans',sans-serif;max-width:240px"><b>${esc(f.name)}</b><br>${gbp(f)}<br>${r ? `~${r.minutes} dk · ${r.changes === 0 ? "aktarmasız" : r.changes + " aktarma"}` : ""}<br>${course ? `<a href="${esc(gmapsLink(f, course))}" target="_blank" rel="noopener">Google Haritalar’da rota ↗</a>` : ""}</div>`);
+        info.setContent(`<div style="font:14px/1.4 'IBM Plex Sans',sans-serif;max-width:240px;color:#14213d"><b>${esc(f.name)}</b><br>${gbp(f)}<br>${r ? `${r.minutes} dk · ${r.changes === 0 ? "aktarmasız" : r.changes + " aktarma"}` : ""}<br>${course ? `<a href="${esc(gmapsLink(f, course))}" target="_blank" rel="noopener">Google Haritalar’da rota ↗</a>` : ""}</div>`);
         info.open({ map, anchor: m });
       });
       bounds.extend({ lat: f.lat, lng: f.lng });
     }
     if (course && course.lat) {
-      const pin = new PinElement({ background: "#0a4d8c", borderColor: "#fff", glyph: "★", glyphColor: "#fff", scale: 1.3 });
-      new AdvancedMarkerElement({ map, position: { lat: course.lat, lng: course.lng }, title: course.name, content: pin.element, zIndex: 999 });
+      new Marker({ map, position: { lat: course.lat, lng: course.lng }, title: course.name, zIndex: 999,
+        icon: { path: "M 0,-14 L 4,-4 L 14,-4 L 6,3 L 9,14 L 0,7 L -9,14 L -6,3 L -14,-4 L -4,-4 Z", scale: 1.2, fillColor: "#0a4d8c", fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 2 } });
       bounds.extend({ lat: course.lat, lng: course.lng });
     }
     if (!bounds.isEmpty()) map.fitBounds(bounds, 40);
