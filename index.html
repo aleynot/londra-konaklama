@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Londra Öğrenci Konaklama Rehberi</title>
+<meta name="description" content="Londra'da 6 aylık öğrenci konaklaması: fiyatlar, mutfak/banyo düzeni ve dil okullarına Google Haritalar ulaşım bilgisi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="demo" id="demoBar" hidden>Demo modu: veriler yalnızca bu tarayıcıda tutulur, ulaşım bilgileri tahminidir. Kurulum için README'ye bakın.</div>
+<header class="top"><div class="wrap">
+  <div>
+    <h1>Londra’da 6 Aylık Öğrenci Konaklaması</h1>
+    <p>Yurt, rezidans ve paylaşımlı evleri karşılaştırın: kimlerin kaldığı, haftalık ve aylık £ ücret, mutfak ve banyo düzeni ve seçtiğiniz dil okuluna ulaşım.</p>
+  </div>
+  <div class="authbox" id="authBox"></div>
+</div></header>
+
+<nav class="courses"><div class="wrap" id="courseBar"><span class="lbl">Kurs seçin</span></div></nav>
+
+<div class="wrap">
+  <div class="course-addr" id="courseAddr"></div>
+  <div class="layout">
+    <aside><div class="panel">
+      <h3>Filtreler</h3>
+      <div class="f"><label>Fiyat gösterimi</label>
+        <div class="seg" id="unitSeg"><button data-v="w" class="on">Haftalık</button><button data-v="m">Aylık</button></div></div>
+      <div class="f"><label for="fGender">Kimler kalıyor</label>
+        <select id="fGender"><option value="">Hepsi</option><option>Karma</option><option>Sadece kadın</option><option>Sadece erkek</option></select></div>
+      <div class="f"><label for="fType">Tesis tipi</label>
+        <select id="fType"><option value="">Hepsi</option><option>Rezidans</option><option>Hostel / Vakıf yurdu</option><option>Ev</option><option>Aile yanı</option></select></div>
+      <div class="f"><label for="fKitchen">Mutfak</label>
+        <select id="fKitchen"><option value="">Hepsi</option><option>Ortak</option><option>Özel</option><option>Yemekli</option></select></div>
+      <div class="f"><label for="fBath">Banyo</label>
+        <select id="fBath"><option value="">Hepsi</option><option>Ortak</option><option>Özel</option><option>Yarı özel</option></select></div>
+      <div class="f"><label for="fMax">En fazla haftalık (£)</label><input type="number" id="fMax" placeholder="ör. 350" min="0"></div>
+      <div class="f"><label for="fSort">Sırala</label>
+        <select id="fSort"><option value="time">Kursa ulaşım süresi</option><option value="price">Fiyat (artan)</option><option value="fav">En çok favorilenen</option><option value="name">İsim</option></select></div>
+      <div class="f"><label class="check"><input type="checkbox" id="fFav"> Sadece favorilerim</label></div>
+      <button class="btn" id="addFacBtn">+ Konaklama ekle</button>
+    </div></aside>
+
+    <main>
+      <div class="status" id="status"></div>
+      <div class="adminbar" id="adminBar" hidden></div>
+      <div class="toolbar">
+        <div class="count" id="count"></div>
+        <div class="tabs" id="tabs"><button data-v="cards" class="on">Kartlar</button><button data-v="table">Karşılaştırma</button><button data-v="map">Harita</button></div>
+      </div>
+      <div id="view"></div>
+      <div class="note" id="methodNote"></div>
+    </main>
+  </div>
+</div>
+<footer class="site"><div class="wrap">Fiyatlar tesislerin yayınladığı başlangıç fiyatlarıdır; rezervasyon öncesi tesisle teyit edin. Ulaşım verileri Google Haritalar'dan alınır; alınamadığında tahmin gösterilir.</div></footer>
+
+<!-- Giriş -->
+<div class="modal-bg" id="loginModal"><div class="modal" style="max-width:420px">
+  <h3>Giriş yap</h3>
+  <div class="sub">Tesis/kurs eklemek ve favori kaydetmek için giriş yapın. Şifre yok: e-postanıza bir giriş bağlantısı gelir.</div>
+  <form id="loginForm" class="fg"><div class="full"><label for="loginEmail">E-posta</label><input id="loginEmail" type="email" required autocomplete="email"></div></form>
+  <div class="err" id="loginErr"></div>
+  <div class="mact" style="margin-top:8px"><button class="btn ghost small" data-close>Vazgeç</button><button class="btn small" id="loginSend">Bağlantı gönder</button></div>
+  <div id="googleLoginWrap" hidden><div class="or">veya</div><button class="gbtn" id="googleLogin">Google ile giriş yap</button></div>
+</div></div>
+
+<!-- Konaklama ekleme -->
+<div class="modal-bg" id="facModal"><div class="modal">
+  <h3>Konaklama ekle</h3>
+  <div class="sub">Eklediğiniz tesis siteyi açan herkese görünür.</div>
+  <form id="facForm" class="fg">
+    <div class="full"><label>Tesis adı *</label><input name="name" required maxlength="120"></div>
+    <div class="full"><label>Adres *</label><input name="address" required maxlength="200" placeholder="Sokak, posta kodu, London">
+      <div class="hint" id="geoHint">Konum adresten otomatik bulunur. Bulunamazsa aşağıya koordinat girin.</div></div>
+    <div class="full"><label>Koordinat veya Google Maps linki (isteğe bağlı)</label><input name="coords" placeholder="51.5236, -0.1445  ya da  https://www.google.com/maps/...@51.52,-0.14,17z">
+      <div class="hint">Google Haritalar’da yere sağ tıklayın → ilk satırdaki koordinatı kopyalayın.</div></div>
+    <div><label>Tip</label><select name="type"><option>Rezidans</option><option>Hostel / Vakıf yurdu</option><option>Ev</option><option>Aile yanı</option></select></div>
+    <div><label>Kimler kalıyor</label><select name="gender"><option>Karma</option><option>Sadece kadın</option><option>Sadece erkek</option><option value="">Belirtilmemiş</option></select></div>
+    <div><label>Evde kaç kişi (ev ise)</label><input name="occupants" type="number" min="1" max="30"></div>
+    <div><label>Fiyat birimi</label><select name="unit"><option value="w">Haftalık £</option><option value="m">Aylık £</option></select></div>
+    <div><label>Fiyat (£) *</label><input name="price" type="number" step="0.01" min="0" required></div>
+    <div><label>Faturalar dahil mi</label><select name="bills"><option value="yes">Dahil</option><option value="no">Hariç</option><option value="">Bilinmiyor</option></select></div>
+    <div><label>Mutfak</label><select name="kitchen"><option>Ortak</option><option>Özel</option><option>Yemekli</option><option>Bilinmiyor</option></select></div>
+    <div><label>Banyo</label><select name="bathroom"><option>Ortak</option><option>Özel</option><option>Yarı özel</option><option>Bilinmiyor</option></select></div>
+    <div class="full"><label>Minimum kalış / sözleşme</label><input name="minStay" maxlength="200" placeholder="ör. en az 1 ay, 6 ay mümkün"></div>
+    <div class="full"><label>Notlar</label><textarea name="notes" maxlength="1000"></textarea></div>
+    <div class="full"><label>Kaynak linki</label><input name="url" type="url" placeholder="https://"></div>
+  </form>
+  <div class="err" id="facErr"></div>
+  <div class="mact"><button class="btn ghost small" data-close>Vazgeç</button><button class="btn small" id="facSave">Kaydet</button></div>
+</div></div>
+
+<!-- Kurs ekleme -->
+<div class="modal-bg" id="courseModal"><div class="modal">
+  <h3>Kurs ekle</h3>
+  <div class="sub">Yeni dil okulunu ekleyin; tüm tesislere ulaşım bilgisi otomatik çıkar.</div>
+  <form id="courseForm" class="fg">
+    <div class="full"><label>Kurs adı *</label><input name="name" required maxlength="120"></div>
+    <div class="full"><label>Adres *</label><input name="address" required maxlength="200"></div>
+    <div class="full"><label>Koordinat veya Google Maps linki (isteğe bağlı)</label><input name="coords" placeholder="51.5165, -0.1330"></div>
+  </form>
+  <div class="err" id="courseErr"></div>
+  <div class="mact"><button class="btn ghost small" data-close>Vazgeç</button><button class="btn small" id="courseSave">Kaydet</button></div>
+</div></div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/estimator.js"></script>
+<script src="js/demo-seed.js"></script>
+<script src="js/store.js"></script>
+<script src="js/google.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
